@@ -37,6 +37,7 @@ void Map::parse()
             tank->over_output_penalty = row["over_output_penalty"].get<float>();
             tank->over_input_penalty = row["over_input_penalty"].get<float>();
             tank->stock = row["initial_stock"].get<float>();
+            tank->expected_stock = tank->stock;
             this->nodes[tank->id] = tank;
         }
     }

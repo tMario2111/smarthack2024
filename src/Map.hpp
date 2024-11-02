@@ -51,6 +51,8 @@ public:
     float over_input_penalty;
     float over_output_penalty;
     float stock;
+
+    float expected_stock;
 };
 
 class Customer : public Node

@@ -13,7 +13,9 @@ add_executable(smarthack2024 main.cpp
         src/Movements.cpp
         src/Movements.hpp
         src/Simulation.cpp
-        src/Simulation.hpp)
+        src/Simulation.hpp
+        src/Round.cpp
+        src/Round.hpp)
 
 target_link_libraries(smarthack2024 PRIVATE cpr::cpr nlohmann_json::nlohmann_json
         unofficial::vincentlaucsb-csv-parser::csv)
