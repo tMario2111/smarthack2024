@@ -9,6 +9,7 @@
 
 #include "Map.hpp"
 #include "Movements.hpp"
+#include "Round.hpp"
 
 class Simulation
 {
@@ -27,6 +28,7 @@ private:
 
     const float MINIMUM_TRANSPORT_CAPACITY = 0.5f;
 
+    void resetTanks();
     void updateRefineries();
     void moveToTanks();
     void processMovements();

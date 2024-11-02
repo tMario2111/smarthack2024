@@ -38,6 +38,7 @@ void Map::parse()
             tank->over_input_penalty = row["over_input_penalty"].get<float>();
             tank->stock = row["initial_stock"].get<float>();
             tank->expected_stock = tank->stock;
+            tank->remaining_input = tank->max_input;
             this->nodes[tank->id] = tank;
         }
     }
@@ -67,6 +68,7 @@ void Map::parse()
             connection.lead_time_days = row["lead_time_days"].get<int>();
             connection.connection_type = row["connection_type"].get<std::string>();
             connection.max_capacity = row["max_capacity"].get<float>();
+            connection.remaining_capacity = connection.max_capacity;
 
             auto from = row["from_id"].get<std::string>();
             auto to = row["to_id"].get<std::string>();

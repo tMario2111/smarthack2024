@@ -15,6 +15,7 @@ public:
     int lead_time_days;
     std::string connection_type;
     float max_capacity;
+    float remaining_capacity;
 };
 
 class Node
@@ -53,6 +54,7 @@ public:
     float stock;
 
     float expected_stock;
+    float remaining_input;
 };
 
 class Customer : public Node

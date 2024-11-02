@@ -5,11 +5,14 @@
 #include <queue>
 #include <string>
 
+#include "Map.hpp"
+
 struct Payload
 {
     int arrival_day;
     float quanitity;
     std::string destination_id;
+    Connection* connection;
 };
 
 bool comparator(const Payload &a, const Payload &b);

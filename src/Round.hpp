@@ -4,6 +4,7 @@
 #include "vector"
 #include "unordered_map"
 #include <nlohmann/json.hpp>
+#include "iostream"
 
 
 struct Demand
@@ -35,6 +36,8 @@ enum Penalties
 };
 
 
+
+
 struct Penalty
 {
     int day;
@@ -44,7 +47,8 @@ struct Penalty
     float co2;
 };
 
-struct Kpi {
+struct Kpi
+{
     int day;
     float cost;
     float co2;
@@ -60,5 +64,6 @@ class Round
 
 public:
     void readRound(nlohmann::json json_read);
-
+    void printRound();
+    static Penalties stringToEnum(const std::string& str);
 };
