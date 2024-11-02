@@ -16,7 +16,8 @@ void Map::parse()
             refinery->over_output_penalty = row["over_output_penalty"].get<float>();
             refinery->production_cost = row["production_cost"].get<float>();
             refinery->production_co2 = row["production_co2"].get<float>();
-            refinery->initial_stock = row["initial_stock"].get<float>();
+            refinery->stock = row["initial_stock"].get<float>();
+            refinery->capacity = row["capacity"].get<float>();
             this->nodes[refinery->id] = refinery;
         }
     }
@@ -35,7 +36,7 @@ void Map::parse()
             tank->overflow_penalty = row["overflow_penalty"].get<float>();
             tank->over_output_penalty = row["over_output_penalty"].get<float>();
             tank->over_input_penalty = row["over_input_penalty"].get<float>();
-            tank->initial_stock = row["initial_stock"].get<float>();
+            tank->stock = row["initial_stock"].get<float>();
             this->nodes[tank->id] = tank;
         }
     }

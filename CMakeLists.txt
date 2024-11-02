@@ -9,7 +9,11 @@ find_package(unofficial-vincentlaucsb-csv-parser CONFIG REQUIRED)
 
 add_executable(smarthack2024 main.cpp
         src/Map.cpp
-        src/Map.hpp)
+        src/Map.hpp
+        src/Movements.cpp
+        src/Movements.hpp
+        src/Simulation.cpp
+        src/Simulation.hpp)
 
 target_link_libraries(smarthack2024 PRIVATE cpr::cpr nlohmann_json::nlohmann_json
         unofficial::vincentlaucsb-csv-parser::csv)

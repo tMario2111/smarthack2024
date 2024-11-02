@@ -20,6 +20,8 @@ public:
 class Node
 {
 public:
+    virtual ~Node() = default;
+
     std::string id, name;
     std::vector<std::pair<Connection, Node*>> neighbors;
 };
@@ -35,7 +37,7 @@ public:
     float over_output_penalty;
     float production_cost;
     float production_co2;
-    float initial_stock;
+    float stock;
 };
 
 class Tank : public Node
@@ -48,7 +50,7 @@ public:
     float underflow_penalty;
     float over_input_penalty;
     float over_output_penalty;
-    float initial_stock;
+    float stock;
 };
 
 class Customer : public Node
