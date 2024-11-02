@@ -5,7 +5,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(cpr CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(unofficial-vincentlaucsb-csv-parser CONFIG REQUIRED)
 
-add_executable(smarthack2024 main.cpp)
+add_executable(smarthack2024 main.cpp
+        src/Map.cpp
+        src/Map.hpp)
 
-target_link_libraries(smarthack2024 PRIVATE cpr::cpr nlohmann_json::nlohmann_json)
+target_link_libraries(smarthack2024 PRIVATE cpr::cpr nlohmann_json::nlohmann_json
+        unofficial::vincentlaucsb-csv-parser::csv)

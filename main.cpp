@@ -4,6 +4,8 @@
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
 
+#include "src/Map.hpp"
+
 const std::string API_KEY = "7bcd6334-bc2e-4cbf-b9d4-61cb9e868869";
 
 int main()
@@ -18,7 +20,6 @@ int main()
         std::cout << r.text << '\n';
     }
     session_id = r.text;
-    std::cout << "ID: " << session_id << '\n';
 
     r = cpr::Post(cpr::Url{"192.168.123.221:8080/api/v1/play/round"},
                   cpr::Header{{"API-KEY",      API_KEY},
@@ -47,6 +48,11 @@ int main()
         std::cout << r.status_code << '\n';
         std::cout << r.text << '\n';
     }
+    std::cout << "SESSION CREATED AND CLOSED SUCCESSFULLY\n";
+
+    Map map{};
+    map.parse();
+    map.print();
 
     return 0;
 }
