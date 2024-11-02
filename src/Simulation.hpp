@@ -10,6 +10,8 @@
 #include "Map.hpp"
 #include "Movements.hpp"
 #include "Round.hpp"
+#include "DemandHeap.hpp"
+#include "Penalty.hpp"
 
 class Simulation
 {
@@ -21,6 +23,7 @@ private:
 
     Map map;
     Movements movements;
+    DemandHeap demands;
 
     int day = 0;
 
@@ -28,10 +31,10 @@ private:
 
     const float MINIMUM_TRANSPORT_CAPACITY = 0.5f;
 
-    void resetTanks();
     void updateRefineries();
     void moveToTanks();
     void processMovements();
+    void moveToCustomers();
 };
 
 

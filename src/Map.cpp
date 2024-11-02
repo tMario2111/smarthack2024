@@ -73,6 +73,9 @@ void Map::parse()
             auto from = row["from_id"].get<std::string>();
             auto to = row["to_id"].get<std::string>();
             this->nodes[from]->neighbors.emplace_back(connection, this->nodes[to]);
+
+            if (dynamic_cast<Tank*>(this->nodes[from]) && dynamic_cast<Customer*>(this->nodes[to]))
+                this->nodes[to]->neighbors.emplace_back(connection, this->nodes[from]);
         }
     }
 }

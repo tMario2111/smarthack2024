@@ -1,11 +1,9 @@
-//
-// Created by Mario on 02-Nov-24.
-//
-
 #include "Round.hpp"
 
 void Round::readRound(nlohmann::json json_read)
 {
+    demands.clear();
+
     if (json_read["round"].is_number_integer())
     {
         round = json_read["round"];
@@ -22,6 +20,11 @@ void Round::readRound(nlohmann::json json_read)
         demand.endDay = demand_read["endDay"];
         demand.startDay = demand_read["startDay"];
         demand.customerId = demand_read["customerId"];
+        if (Customer* customer = dynamic_cast<Customer*>(map.nodes[demand.customerId]))
+        {
+            demand.early_penalty = customer->early_delivery_penalty;
+            demand.late_penalty = customer->late_delivery_penalty;
+        }
         demands.push_back(demand);
     }
 
@@ -32,6 +35,7 @@ void Round::readRound(nlohmann::json json_read)
         penalty.cost = penalty_read["cost"];
         penalty.co2 = penalty_read["co2"];
         penalty.type = stringToEnum(penalty_read["type"]);
+        StaticPenalty::errorMap[penalty_read["type"]] += penalty.cost + penalty.co2;
     }
 
     nlohmann::json deltaKpi;
@@ -43,7 +47,10 @@ void Round::readRound(nlohmann::json json_read)
 
 
     nlohmann::json totalKpi;
-    totalKpi = json_read["deltaKpis"];
+    totalKpi = json_read["totalKpis"];
+
+    if (round == 41)
+        finalKpi = totalKpis;
 
     totalKpis.co2 = totalKpi["co2"];
     totalKpis.day = totalKpi["day"];
@@ -108,4 +115,19 @@ Penalties Round::stringToEnum(const std::string& str) {
     } else {
         throw std::invalid_argument("Invalid string for enum conversion: " + str);
     }
+}
+
+Round::Round(Map &map) :
+    map{ map }
+{
+
+}
+
+Kpi &Kpi::operator=(const Kpi &other)
+{
+    this->cost = other.cost;
+    this->co2 = other.co2;
+    this->day = other.day;
+
+    return *this;
 }

@@ -6,6 +6,8 @@
 #include <nlohmann/json.hpp>
 #include "iostream"
 
+#include "Map.hpp"
+#include "Penalty.hpp"
 
 struct Demand
 {
@@ -14,6 +16,8 @@ struct Demand
     int postDay;
     int startDay;
     int endDay;
+    float late_penalty;
+    float early_penalty;
 };
 
 enum Penalties
@@ -52,17 +56,21 @@ struct Kpi
     int day;
     float cost;
     float co2;
+    Kpi& operator=(const Kpi& other);
 };
 
 class Round
 {
+    Map& map;
     int round;
-    std::vector<Demand> demands;
     std::vector<Penalty> penalties;
     Kpi deltaKpis;
     Kpi totalKpis;
-
 public:
+    Round(Map& map);
+
+    std::vector<Demand> demands;
+    Kpi finalKpi;
     void readRound(nlohmann::json json_read);
     void printRound();
     static Penalties stringToEnum(const std::string& str);

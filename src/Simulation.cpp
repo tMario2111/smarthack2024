@@ -17,10 +17,15 @@ void Simulation::run()
     session_id = r.text;
     std::cout << "SESSION CREATED\n";
 
+    Kpi final_kpi{};
+
+    // Initialize penalty
+    StaticPenalty::initializeErrorMap();
+
+    Round round{this->map};
+
     for (day = 0; day <= 41; ++day)
     {
-        this->resetTanks();
-
         this->processMovements();
         this->moveToTanks();
 
@@ -49,12 +54,19 @@ void Simulation::run()
 
         auto json_response = nlohmann::json::parse(r.text);
 
-//        Round round;
-//        round.readRound(json_response);
+        round.readRound(json_response);
+        if (day == 41)
+        {
+//            final_kpi = round.finalKpi;
+//            StaticPenalty::printErrorMap();
+        }
+        for (auto &d: round.demands)
+            this->demands.addDemand(d);
 
-        if (json_response["round"] == 1)
-            std::cout << json_response.dump(4) << "\n####\n";
+//        if (json_response["round"] == 1)
+//            std::cout << json_response.dump(4) << "\n####\n";
 
+        this->moveToCustomers();
         this->updateRefineries();
     }
 
@@ -66,6 +78,18 @@ void Simulation::run()
         std::cout << r.text << '\n';
         exit(EXIT_FAILURE);
     }
+//
+    auto end_response = nlohmann::json::parse(r.text);
+//    round.readRound(end_response);
+
+    std::cout << end_response.dump(4) << "\n\n";
+
+    final_kpi = round.finalKpi;
+    StaticPenalty::printErrorMap();
+
+    std::cout << "CO2: " << final_kpi.co2 << '\n';
+    std::cout << "COST: " << final_kpi.cost << '\n';
+
     std::cout << "SESSION CLOSED\n";
 }
 
@@ -100,6 +124,7 @@ void Simulation::moveToTanks()
                     auto quantity = std::min(
                             std::min(std::min(remaining_tank_capacity, neighbor.first.remaining_capacity),
                                      refinery->stock), current_output);
+
                     if (quantity > 0.f && quantity >= neighbor.first.max_capacity * MINIMUM_TRANSPORT_CAPACITY)
                     {
                         refinery->stock -= quantity;
@@ -138,23 +163,44 @@ void Simulation::processMovements()
             p.connection->remaining_capacity += p.quanitity;
         } else if (auto customer = dynamic_cast<Customer *>(node))
         {
-            // DO TANK OVER INPUT
-            //
-
-
             // Momentan
             continue;
         }
     }
 }
 
-void Simulation::resetTanks()
+void Simulation::moveToCustomers()
 {
-    for (auto &[id, node]: this->map.nodes)
+    auto ok = true;
+    while (ok && !this->demands.demands.empty())
     {
-        if (auto tank = dynamic_cast<Tank*>(node))
+        auto demand = this->demands.getRoot();
+        auto customer = dynamic_cast<Customer*>(this->map.nodes[demand.customerId]);
+        for (auto neighbor : customer->neighbors)
         {
-            tank->remaining_input = tank->max_input;
+            if (auto tank = dynamic_cast<Tank*>(neighbor.second))
+            {
+                auto quantity = std::min((float)demand.amount, tank->stock);
+                if (quantity == 0)
+                {
+                    ok = false;
+                    break;
+                }
+                demand.amount -= quantity;
+                tank->stock -= quantity;
+                tank->expected_stock -= quantity;
+
+                Payload p;
+                p.quanitity = quantity;
+                p.arrival_day = this->day + neighbor.first.lead_time_days;
+                p.destination_id = neighbor.second->id;
+                p.connection = &neighbor.first;
+
+                nlohmann::json json_movement;
+                json_movement["connectionId"] = neighbor.first.id;
+                json_movement["amount"] = quantity;
+                this->json_movements.push_back(json_movement);
+            }
         }
     }
 }
