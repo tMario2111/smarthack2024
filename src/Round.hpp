@@ -106,5 +106,9 @@ public:
         }
     }
 
+    void printRoundCost() const {
+        std::cout << "Round " << round << " cost: " << deltaKpis.cost << " co2: "<< deltaKpis.co2 << std::endl;
+    }
+
 
 };

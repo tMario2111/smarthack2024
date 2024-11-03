@@ -34,7 +34,7 @@ private:
 
     void updateRefineries();
 
-    void moveToTanks();
+    void moveToTanks(int round);
 
     void processMovements();
 

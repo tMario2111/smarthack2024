@@ -25,7 +25,7 @@ void Simulation::run() {
     for (day = 0; day <= 41; ++day) {
 
         this->processMovements();
-        this->moveToTanks();
+        this->moveToTanks(day);
 
         nlohmann::json body;
         body["day"] = day;
@@ -53,6 +53,7 @@ void Simulation::run() {
         auto json_response = nlohmann::json::parse(r.text);
 
         round.readRound(json_response);
+        round.printRoundCost();
         for (auto &d: round.demands)
             this->demands_heap.addDemand(d);
 
@@ -117,7 +118,7 @@ void Simulation::updateRefineries() {
 }
 
 
-void Simulation::moveToTanks() {
+void Simulation::moveToTanks(int round) {
     // Trebuie sa mutam SI DIN TANK IN TANK
     std::vector<std::vector<Tank*>> vectorTank; // vector de vectori de tankuri
 
@@ -126,6 +127,11 @@ void Simulation::moveToTanks() {
     for (auto &[id, node]: this->map.nodes) {
         if (auto *refinery = dynamic_cast<Refinery *>(node)) {
             float current_output = refinery->max_output;
+            // Sort by lead time * distance
+            std::sort(refinery->neighbors.begin(), refinery->neighbors.end(), [](const auto &a, const auto &b) {
+                return a.first.distance * a.first.lead_time_days < b.first.distance * b.first.lead_time_days;
+            });
+
             for (auto &neighbor: refinery->neighbors) {
                 if (auto tank = dynamic_cast<Tank *>(neighbor.second)) {
                     nivel1.push_back(tank);
@@ -135,7 +141,10 @@ void Simulation::moveToTanks() {
                     auto remaining_tank_capacity = tank->capacity - tank->expected_stock;
                     auto quantity = std::min(remaining_tank_capacity, current_output);
 
-                    if (quantity > 0.f && quantity >= neighbor.first.max_capacity * MINIMUM_TRANSPORT_CAPACITY) {
+                    if ((quantity / (neighbor.first.distance * neighbor.first.lead_time_days)) > 4.0) continue;
+
+
+                    if (quantity > 0.f && quantity >= neighbor.first.max_capacity * MINIMUM_TRANSPORT_CAPACITY && 42 - round >= neighbor.first.lead_time_days) {
                         refinery->stock -= quantity;
                         current_output -= quantity;
                         neighbor.first.remaining_capacity -= quantity;
@@ -177,10 +186,18 @@ void Simulation::moveToTanks() {
                     if (tank2->expected_stock >= tank2->capacity)
                         continue;
 
+
                     auto remaining_tank_capacity = tank2->capacity - tank2->expected_stock;
                     auto quantity = std::min(remaining_tank_capacity, tank->stock);
 
-                    if (quantity > 0.f && quantity >= neighbor.first.max_capacity * MINIMUM_TRANSPORT_CAPACITY) {
+                    // if (quantity < 1000000) continue;
+                    // magic number!
+                    if (quantity / (neighbor.first.distance * neighbor.first.lead_time_days) > .5 ) continue;
+
+                    std::cout << "Quantity: " << quantity / (neighbor.first.distance * neighbor.first.lead_time_days) << '\n';
+
+
+                    if (quantity > 0.f && quantity >= neighbor.first.max_capacity * MINIMUM_TRANSPORT_CAPACITY && 42 - round >= neighbor.first.lead_time_days) {
                         tank->expected_stock -= quantity;
                         neighbor.first.remaining_capacity -= quantity;
                         tank2->expected_stock = tank2->stock + quantity;
