@@ -20,7 +20,7 @@ void Round::readRound(nlohmann::json json_read) {
             demand.endDay = demand_read["endDay"];
             demand.startDay = demand_read["startDay"];
             demand.customerId = demand_read["customerId"];
-            if (Customer *customer = dynamic_cast<Customer *>(map.nodes[demand.customerId])) {
+            if (auto *customer = dynamic_cast<Customer *>(map.nodes[demand.customerId])) {
                 demand.early_penalty = customer->early_delivery_penalty;
                 demand.late_penalty = customer->late_delivery_penalty;
             }

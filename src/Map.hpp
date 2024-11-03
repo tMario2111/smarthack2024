@@ -36,6 +36,8 @@ public:
     float production_cost;
     float production_co2;
     float stock;
+    float cost = 0;
+    float co2 = 0;
 };
 
 class Tank : public Node {

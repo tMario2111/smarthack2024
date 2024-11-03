@@ -11,7 +11,7 @@
 
 struct Demand {
     std::string customerId;
-    int amount;
+    float amount;
     int postDay;
     int startDay;
     int endDay;

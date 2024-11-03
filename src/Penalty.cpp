@@ -1,6 +1,6 @@
 #include "Penalty.hpp"
 
-std::unordered_map<std::string, float> StaticPenalty::errorMap;
+std::unordered_map<std::string, int> StaticPenalty::errorMap;
 
 void StaticPenalty::initializeErrorMap() {
     errorMap["INVALID_CONNECTION"] = 0;

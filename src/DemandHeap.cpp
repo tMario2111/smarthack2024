@@ -24,3 +24,5 @@ bool comparator(const Demand &a, const Demand &b) {
             return a.amount < b.amount; // asta e mai important ca sa n avem penalizari la final
     return a.endDay > b.endDay;
 }
+
+

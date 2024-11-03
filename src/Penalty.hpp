@@ -8,7 +8,7 @@
 
 class StaticPenalty {
 public:
-    static std::unordered_map<std::string, float> errorMap;
+    static std::unordered_map<std::string, int> errorMap;
 
     static void initializeErrorMap();
 
@@ -24,6 +24,13 @@ public:
         }
     }
 
+    static int sumPenalty() {
+        int sum = 0;
+        for (const auto &pair: errorMap) {
+            sum += pair.second;
+        }
+        return sum;
+    }
 
     StaticPenalty() = delete;
 };

@@ -56,6 +56,7 @@ void Simulation::run() {
         for (auto &d: round.demands)
             this->demands_heap.addDemand(d);
 
+
         //        if (json_response["round"] == 1)
         //            std::cout << json_response.dump(4) << "\n####\n";
 
@@ -83,6 +84,23 @@ void Simulation::run() {
     std::cout << "CO2: " << final_kpi.co2 << '\n';
     std::cout << "COST: " << final_kpi.cost << '\n';
 
+    std::cout << "TOTAL PENALTY: " << StaticPenalty::sumPenalty() << '\n';
+    std::cout << "CO2 + COST - PENALTY: " << (int) (final_kpi.co2 + final_kpi.cost - StaticPenalty::sumPenalty()) <<
+            '\n';
+
+    //Calcularea sumei costului si co2 pentru TOATE rafinariile:
+    float total_cost = 0;
+    float total_co2 = 0;
+    for (auto &[id, node]: this->map.nodes) {
+        if (auto *refinery = dynamic_cast<Refinery *>(node)) {
+            total_cost += refinery->cost;
+            total_co2 += refinery->co2;
+        }
+    }
+    // Afisarea
+    std::cout << "TOTAL COST RAFINARII: " << total_cost << '\n';
+    std::cout << "TOTAL CO2 RAFINARII: " << total_co2 << '\n';
+
     std::cout << "SESSION CLOSED\n";
 }
 
@@ -92,6 +110,8 @@ void Simulation::updateRefineries() {
             refinery->stock += refinery->production;
             if (refinery->stock > refinery->capacity)
                 refinery->stock = refinery->capacity;
+            refinery->cost += refinery->production_cost;
+            refinery->co2 += refinery->production_co2;
         }
     }
 }
@@ -99,20 +119,21 @@ void Simulation::updateRefineries() {
 
 void Simulation::moveToTanks() {
     // Trebuie sa mutam SI DIN TANK IN TANK
-    std::vector<std::vector<Tank>>
+    std::vector<std::vector<Tank*>> vectorTank; // vector de vectori de tankuri
 
+    // pentru fiecare rafinarie luam tank-ul si il punem pe nivelul 1! de tankuri
+    std::vector<Tank*> nivel1;
     for (auto &[id, node]: this->map.nodes) {
         if (auto *refinery = dynamic_cast<Refinery *>(node)) {
             float current_output = refinery->max_output;
             for (auto &neighbor: refinery->neighbors) {
                 if (auto tank = dynamic_cast<Tank *>(neighbor.second)) {
+                    nivel1.push_back(tank);
                     if (tank->expected_stock >= tank->capacity)
                         continue;
 
                     auto remaining_tank_capacity = tank->capacity - tank->expected_stock;
-                    auto quantity = std::min(
-                        std::min(std::min(remaining_tank_capacity, neighbor.first.remaining_capacity),
-                                 refinery->stock), current_output);
+                    auto quantity = std::min(remaining_tank_capacity, current_output);
 
                     if (quantity > 0.f && quantity >= neighbor.first.max_capacity * MINIMUM_TRANSPORT_CAPACITY) {
                         refinery->stock -= quantity;
@@ -137,10 +158,57 @@ void Simulation::moveToTanks() {
             }
         }
     }
+
+    vectorTank.push_back(nivel1);
+
+    // pentru fiecare nivel de tankuri facem mutarile
+    auto exista_tank = true;
+    auto index = 1;
+    while (exista_tank) {
+        exista_tank = false;
+        std::vector<Tank*> nivel;
+        for (auto tank: vectorTank[index-1]) {
+            for (auto neighbor: tank->neighbors) {
+                if (auto tank2 = dynamic_cast<Tank *>(neighbor.second)) {
+                    if (chechTankAlreadyInVector(vectorTank, tank2))
+                        continue;
+                    nivel.push_back(tank2);
+                    exista_tank = true;
+                    if (tank2->expected_stock >= tank2->capacity)
+                        continue;
+
+                    auto remaining_tank_capacity = tank2->capacity - tank2->expected_stock;
+                    auto quantity = std::min(remaining_tank_capacity, tank->stock);
+
+                    if (quantity > 0.f && quantity >= neighbor.first.max_capacity * MINIMUM_TRANSPORT_CAPACITY) {
+                        tank->expected_stock -= quantity;
+                        neighbor.first.remaining_capacity -= quantity;
+                        tank2->expected_stock = tank2->stock + quantity;
+
+                        Payload p;
+                        p.quantity = quantity;
+                        p.arrival_day = this->day + neighbor.first.lead_time_days;
+                        p.destination_id = neighbor.second->id;
+                        p.connection = &neighbor.first;
+                        movements.addMovement(p);
+
+                        nlohmann::json json_movement;
+
+                        json_movement["connectionId"] = neighbor.first.id;
+                        json_movement["amount"] = quantity;
+                        this->json_movements.push_back(json_movement);
+                    }
+                }
+            }
+        }
+        vectorTank.push_back(nivel);
+        index++;
+    }
 }
 
 void Simulation::startFromDemand() {
-    while (!this->demands_heap.demands.empty()) {
+    bool ok = true;
+    while (ok && !this->demands_heap.demands.empty()) {
         auto demand = this->demands_heap.getRoot();
         auto customer = dynamic_cast<Customer *>(this->map.nodes[demand.customerId]);
 
@@ -152,31 +220,24 @@ void Simulation::startFromDemand() {
             }
         }
         std::sort(sorted_tanks.begin(), sorted_tanks.end(), [](const auto &a, const auto &b) {
-            return a.first.lead_time_days < b.first.lead_time_days;
+            return a.first.distance < b.first.distance;
         });
 
-        bool ajunge = false;
+        bool de_scos = false;
         for (auto neighbor: sorted_tanks) {
             if (auto tank = dynamic_cast<Tank *>(neighbor.second)) {
-                if (demand.amount == 0) {
-                    std::cout << "AM AJUNS AICI";
-                    break;
-                }
-                auto quantity = std::min(static_cast<float>(demand.amount), tank->stock);
-                // if (quantity == 0) {
-                //     ok = false;
-                //     break;
-                // }
+                if (tank->stock <= 0.f)
+                    continue;
+                // std::cout << "Am pus ceva aici";
+
+                auto quantity = std::min((demand.amount), tank->stock);
 
                 demand.amount -= quantity;
                 tank->stock -= quantity;
                 tank->expected_stock -= quantity;
 
 
-                if (demand.amount == 0) {
-                    ajunge = true;
-                    break;
-                }
+
 
                 Payload p;
                 p.quantity = quantity;
@@ -191,17 +252,31 @@ void Simulation::startFromDemand() {
                 json_movement["connectionId"] = neighbor.first.id;
                 json_movement["amount"] = quantity;
                 this->json_movements.push_back(json_movement);
+
+                if (std::fpclassify(demand.amount) == FP_ZERO) {
+                    de_scos = true;
+                    break;
+                }
+
             }
         }
-        if (ajunge) {
+        if(de_scos)
             this->demands_heap.extractRoot();
-        }
-        else {
-            break;
-        }
+        else
+            ok = false;
+
     }
 }
 
+bool Simulation::chechTankAlreadyInVector(const std::vector<std::vector<Tank *>>& vectorTank, Tank *tank) {
+    for (auto &vector: vectorTank) {
+        for (auto &tank2: vector) {
+            if (tank->id == tank2->id)
+                return true;
+        }
+    }
+    return false;
+}
 
 
 void Simulation::processMovements() {
