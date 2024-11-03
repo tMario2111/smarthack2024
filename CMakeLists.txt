@@ -19,7 +19,8 @@ add_executable(smarthack2024 main.cpp
         src/DemandHeap.cpp
         src/DemandHeap.hpp
         src/Penalty.cpp
-        src/Penalty.hpp)
+        src/Penalty.hpp
+)
 
 target_link_libraries(smarthack2024 PRIVATE cpr::cpr nlohmann_json::nlohmann_json
         unofficial::vincentlaucsb-csv-parser::csv)

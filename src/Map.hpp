@@ -7,8 +7,7 @@
 
 #include <csv.hpp>
 
-class Connection
-{
+class Connection {
 public:
     std::string id;
     float distance;
@@ -18,17 +17,15 @@ public:
     float remaining_capacity;
 };
 
-class Node
-{
+class Node {
 public:
     virtual ~Node() = default;
 
     std::string id, name;
-    std::vector<std::pair<Connection, Node*>> neighbors;
+    std::vector<std::pair<Connection, Node *> > neighbors;
 };
 
-class Refinery : public Node
-{
+class Refinery : public Node {
 public:
     float capacity;
     float max_output;
@@ -41,8 +38,7 @@ public:
     float stock;
 };
 
-class Tank : public Node
-{
+class Tank : public Node {
 public:
     float capacity;
     float max_input;
@@ -57,8 +53,7 @@ public:
     float remaining_input;
 };
 
-class Customer : public Node
-{
+class Customer : public Node {
 public:
     float max_input;
     float over_input_penalty;
@@ -66,12 +61,11 @@ public:
     float early_delivery_penalty;
 };
 
-class Map
-{
+class Map {
 public:
     void parse();
 
     void print();
 
-    std::unordered_map<std::string, Node*> nodes;
+    std::unordered_map<std::string, Node *> nodes;
 };

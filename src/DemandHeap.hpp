@@ -9,14 +9,14 @@
 
 bool comparator(const Demand &a, const Demand &b);
 
-class DemandHeap
-{
+class DemandHeap {
 public:
     DemandHeap();
 
-    void addDemand(const Demand& d);
+    void addDemand(const Demand &d);
 
     Demand getRoot();
+
     void extractRoot();
 
     std::vector<Demand> demands;
