@@ -20,7 +20,7 @@ public:
 
 private:
     const std::string API_KEY = "7bcd6334-bc2e-4cbf-b9d4-61cb9e868869";
-    const std::string IP = "localhost";
+    const std::string IP = "192.168.123.221";
 
     Map map;
     Movements movements;
@@ -31,6 +31,7 @@ private:
     std::vector<nlohmann::json> json_movements;
 
     const float MINIMUM_TRANSPORT_CAPACITY = 0.5f;
+    const float REFINERY_MOVE_WEIGTH = 8.f;
 
     void updateRefineries();
 
