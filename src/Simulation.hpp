@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
@@ -41,5 +42,5 @@ private:
 
     void startFromDemand();
 
-    static bool chechTankAlreadyInVector(const std::vector<std::vector<Tank*>>& vectorTank, Tank* tank);
+    static bool checkTankAlreadyInVector(const std::vector<std::vector<Tank*>>& vectorTank, Tank* tank);
 };
