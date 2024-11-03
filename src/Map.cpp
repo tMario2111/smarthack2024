@@ -1,11 +1,8 @@
 #include "Map.hpp"
 
-void Map::parse()
-{
-    {
+void Map::parse() { {
         csv::CSVReader reader{"../map/refineries.csv"};
-        for (auto &row: reader)
-        {
+        for (auto &row: reader) {
             auto refinery = new Refinery;
             refinery->id = row["id"].get<std::string>();
             refinery->name = row["name"].get<std::string>();
@@ -20,12 +17,9 @@ void Map::parse()
             refinery->capacity = row["capacity"].get<float>();
             this->nodes[refinery->id] = refinery;
         }
-    }
-
-    {
+    } {
         csv::CSVReader reader{"../map/tanks.csv"};
-        for (auto &row: reader)
-        {
+        for (auto &row: reader) {
             auto tank = new Tank;
             tank->id = row["id"].get<std::string>();
             tank->name = row["name"].get<std::string>();
@@ -41,12 +35,9 @@ void Map::parse()
             tank->remaining_input = tank->max_input;
             this->nodes[tank->id] = tank;
         }
-    }
-
-    {
+    } {
         csv::CSVReader reader{"../map/customers.csv"};
-        for (auto &row: reader)
-        {
+        for (auto &row: reader) {
             auto customer = new Customer;
             customer->id = row["id"].get<std::string>();
             customer->name = row["name"].get<std::string>();
@@ -56,12 +47,9 @@ void Map::parse()
             customer->early_delivery_penalty = row["early_delivery_penalty"].get<float>();
             this->nodes[customer->id] = customer;
         }
-    }
-
-    {
+    } {
         csv::CSVReader reader{"../map/connections.csv"};
-        for (auto &row: reader)
-        {
+        for (auto &row: reader) {
             Connection connection;
             connection.id = row["id"].get<std::string>();
             connection.distance = row["distance"].get<float>();
@@ -73,17 +61,17 @@ void Map::parse()
             auto from = row["from_id"].get<std::string>();
             auto to = row["to_id"].get<std::string>();
             this->nodes[from]->neighbors.emplace_back(connection, this->nodes[to]);
+
+            if (dynamic_cast<Tank *>(this->nodes[from]) && dynamic_cast<Customer *>(this->nodes[to]))
+                this->nodes[to]->neighbors.emplace_back(connection, this->nodes[from]);
         }
     }
 }
 
-void Map::print()
-{
-    for (auto &[_, val]: nodes)
-    {
+void Map::print() {
+    for (auto &[_, val]: nodes) {
         std::cout << val->id.substr(0, 2) << " : ";
-        for (auto &n: val->neighbors)
-        {
+        for (auto &n: val->neighbors) {
             std::cout << n.second->id.substr(0, 2) << ' ';
         }
         std::cout << '\n';
