@@ -6,7 +6,7 @@ void Simulation::run()
 
     std::string session_id;
 
-    cpr::Response r = cpr::Post(cpr::Url{IP + ":8080/api/v1/session/start"},
+    cpr::Response r = cpr::Post(cpr::Url{IP + "api/v1/session/start"},
                                 cpr::Header{{"API-KEY", API_KEY}});
     if (r.status_code != 200)
     {
@@ -39,7 +39,7 @@ void Simulation::run()
 
         // std::cout << body.dump(4) << "\n\n";
 
-        r = cpr::Post(cpr::Url{IP + ":8080/api/v1/play/round"},
+        r = cpr::Post(cpr::Url{IP + "api/v1/play/round"},
                       cpr::Header{
                               {"API-KEY",      API_KEY},
                               {"SESSION-ID",   session_id},
@@ -69,7 +69,7 @@ void Simulation::run()
         this->updateRefineries();
     }
 
-    r = cpr::Post(cpr::Url{IP + ":8080/api/v1/session/end"},
+    r = cpr::Post(cpr::Url{IP + "api/v1/session/end"},
                   cpr::Header{{"API-KEY", API_KEY}});
 
     if (r.status_code != 200)

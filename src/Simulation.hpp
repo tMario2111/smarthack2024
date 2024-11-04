@@ -20,8 +20,9 @@ public:
     void run();
 
 private:
-    const std::string API_KEY = "7bcd6334-bc2e-4cbf-b9d4-61cb9e868869";
-    const std::string IP = "192.168.123.221";
+//    const std::string API_KEY = "7bcd6334-bc2e-4cbf-b9d4-61cb9e868869";
+    const std::string API_KEY = "8a1f8ab0-3af0-45b6-a86b-57de70718d41";
+    const std::string IP = "https://smarthack2024-eval.cfapps.eu12.hana.ondemand.com/";
 
     Map map;
     Movements movements;
